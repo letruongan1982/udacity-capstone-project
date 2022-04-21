@@ -18,6 +18,8 @@ export class TodosAccess {
   constructor(
     private readonly docClient: DocumentClient = createDynamoDBClient(),
     private readonly todosTable = process.env.TODOS_TABLE,
+    private readonly imagesTable = process.env.IMAGES_TABLE,
+    private readonly imageIdIndex = process.env.IMAGE_ID_INDEX,
     private readonly todoCreatedIndex = process.env.TODOS_CREATED_AT_INDEX,
     private readonly todoDueDateIndex = process.env.TODOS_DUE_DATE_INDEX
   ) {
@@ -29,8 +31,7 @@ export class TodosAccess {
     // Parse query parameters
     let nextKey = parseNextKeyParameter(event)
     let limit = parseLimitParameter(event) || 5
-    logger.info(nextKey)
-    logger.info(limit)
+    
     let queryParams: AWS.DynamoDB.DocumentClient.QueryInput = {
       TableName: this.todosTable,
       IndexName: this.todoCreatedIndex,
@@ -80,6 +81,21 @@ export class TodosAccess {
       }
     }
     const result = await this.docClient.query(queryParams).promise()
+
+    return result
+  }
+
+  async getTodoImage(imageId: string): Promise<PromiseResult<AWS.DynamoDB.DocumentClient.QueryOutput, AWS.AWSError>> {
+    logger.info('Getting todo image')
+
+    const result = await this.docClient.query({
+      TableName : this.imagesTable,
+      IndexName : this.imageIdIndex,
+      KeyConditionExpression: 'imageId = :imageId',
+      ExpressionAttributeValues: {
+        ':imageId': imageId
+      }
+    }).promise()
 
     return result
   }

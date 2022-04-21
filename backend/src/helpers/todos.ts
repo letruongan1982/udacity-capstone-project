@@ -31,8 +31,11 @@ export async function getAllTodosByDueDate(userId: string, event: APIGatewayProx
   return todoAccess.getAllTodosByDueDate(userId, event);
 }
 
-export async function createTodo(userId: string, createTodoRequest: CreateTodoRequest): Promise<TodoItem> {
+export async function getTodoImage(imageId: string): Promise<PromiseResult<AWS.DynamoDB.DocumentClient.QueryOutput, AWS.AWSError>> {
+  return todoAccess.getTodoImage(imageId);
+}
 
+export async function createTodo(userId: string, createTodoRequest: CreateTodoRequest): Promise<TodoItem> {
   const itemId = uuid.v4()
 
   return await todoAccess.createTodo({
